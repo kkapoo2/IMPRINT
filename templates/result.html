@@ -489,79 +489,69 @@
 
 
 
-          <!-- =====================
-               LBP
-          ====================== -->
-          <article>
 
-            <i class="green">
-              L
-            </i>
+            <!-- LBP -->
+            <article>
 
+              <i class="green">
+                L
+              </i>
 
-            <div>
+              <div>
 
-              <strong>
-                LBP
-              </strong>
+                <strong>
+                  LBP
+                </strong>
 
+                <small>
+                  질감 및 패턴 유사도
+                </small>
 
-              <small>
-                질감 및 패턴 유사도
-              </small>
+                <!-- GHIBLI -->
+                <p class="metric-row">
+                  <span>Ghibli</span>
+                  <b>
+                    {{ "%.2f"|format(result.lbp_scores.Ghibli) }}%
+                  </b>
+                </p>
 
+                <div class="metric-bar">
+                  <em
+                    style="width: {{ result.lbp_scores.Ghibli }}%;"
+                  ></em>
+                </div>
 
-              <!--
-                현재 LBP는 analyzer.py에
-                아직 연결되어 있지 않으므로
-                임시로 "-" 표시
-              -->
+                <!-- DISNEY -->
+                <p class="metric-row">
+                  <span>Disney</span>
+                  <b>
+                    {{ "%.2f"|format(result.lbp_scores.Disney) }}%
+                  </b>
+                </p>
 
+                <div class="metric-bar">
+                  <em
+                    style="width: {{ result.lbp_scores.Disney }}%;"
+                  ></em>
+                </div>
 
-              <!-- GHIBLI -->
-              <p class="metric-row">
+                <!-- SIMPSONS -->
+                <p class="metric-row">
+                  <span>Simpsons</span>
+                  <b>
+                    {{ "%.2f"|format(result.lbp_scores.Simpsons) }}%
+                  </b>
+                </p>
 
-                <span>
-                  Ghibli
-                </span>
+                <div class="metric-bar">
+                  <em
+                    style="width: {{ result.lbp_scores.Simpsons }}%;"
+                  ></em>
+                </div>
 
-                <b>
-                  -
-                </b>
+              </div>
 
-              </p>
-
-
-              <!-- DISNEY -->
-              <p class="metric-row">
-
-                <span>
-                  Disney
-                </span>
-
-                <b>
-                  -
-                </b>
-
-              </p>
-
-
-              <!-- SIMPSONS -->
-              <p class="metric-row">
-
-                <span>
-                  Simpsons
-                </span>
-
-                <b>
-                  -
-                </b>
-
-              </p>
-
-            </div>
-
-          </article>
+            </article>
 
 
         </div>
@@ -574,7 +564,7 @@
         <div class="weight-info">
 
           <small>
-            FINAL SCORE = Color Histogram 30% + CLIP 70%
+              FINAL SCORE = Color Histogram 20% + CLIP 60% + LBP 20%
           </small>
 
         </div>
