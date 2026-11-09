@@ -56,6 +56,8 @@ function setupUpload() {
   const dropzone = document.querySelector("#dropzone");
   if (!form || !input || !dropzone) return;
 
+  sessionStorage.removeItem(STORAGE_KEY);
+
   input.addEventListener("change", () => saveImage(input.files[0]));
   ["dragenter", "dragover"].forEach((eventName) => {
     dropzone.addEventListener(eventName, (event) => {
@@ -69,16 +71,41 @@ function setupUpload() {
       dropzone.classList.remove("dragging");
     });
   });
-  dropzone.addEventListener("drop", (event) => saveImage(event.dataTransfer.files[0]));
+  dropzone.addEventListener("drop", (event) => {
+    event.preventDefault();
+
+    const file = event.dataTransfer.files[0];
+    if (!file) return;
+
+    // 실제 파일 입력창에도 반영
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(file);
+
+    input.files = dataTransfer.files;
+
+    // 미리보기 업데이트
+    saveImage(file);
+  });
   form.addEventListener("submit", (event) => {
-    if (!sessionStorage.getItem(STORAGE_KEY)) {
+    const file = input.files[0];
+
+    if (!file) {
       event.preventDefault();
       showToast("먼저 분석할 이미지를 선택해주세요.");
+      return;
+    }
+
+    if (!["image/jpeg", "image/png"].includes(file.type)) {
+      event.preventDefault();
+      showToast("JPG 또는 PNG 파일만 업로드할 수 있습니다.");
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      event.preventDefault();
+      showToast("이미지 크기는 10MB 이하여야 합니다.");
     }
   });
-
-  const saved = sessionStorage.getItem(STORAGE_KEY);
-  if (saved) updateUploadPreview(saved, "이전에 선택한 이미지");
 }
 
 function applyStoredImage() {

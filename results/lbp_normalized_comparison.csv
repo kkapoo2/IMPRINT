@@ -1,0 +1,13 @@
+﻿filename,actual,Original,Normalized,Norm_Ghibli,Norm_Disney,Norm_Simpsons
+test_ghibli_01.png,Ghibli,Ghibli,Ghibli,10.04,2.99,-2.43
+test_ghibli_02.png,Ghibli,Ghibli,Ghibli,9.67,3.17,-2.66
+test_ghibli_03.png,Ghibli,Ghibli,Ghibli,8.24,0.77,-4.1
+test_ghibli_04.png,Ghibli,Ghibli,Ghibli,8.71,1.42,-3.84
+test_disney_01.png,Disney,Ghibli,Ghibli,11.4,6.09,-0.27
+test_disney_02.png,Disney,Ghibli,Ghibli,10.6,4.4,-1.91
+test_disney_03.png,Disney,Ghibli,Ghibli,11.47,5.74,0.03
+test_disney_04.png,Disney,Ghibli,Ghibli,10.31,4.93,-1.58
+test_simpsons_01.png,Simpsons,Ghibli,Ghibli,9.52,5.37,4.85
+test_simpsons_02.png,Simpsons,Ghibli,Ghibli,9.75,3.87,2.12
+test_simpsons_03.png,Simpsons,Ghibli,Ghibli,10.17,5.26,3.87
+test_simpsons_04.png,Simpsons,Ghibli,Ghibli,10.69,3.63,-0.29

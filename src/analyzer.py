@@ -27,10 +27,10 @@ STYLE_DATASETS = {
 }
 
 
-# 가중치
-COLOR_WEIGHT = 0.2
-CLIP_WEIGHT = 0.6
-LBP_WEIGHT = 0.2
+# 최종 가중치
+COLOR_WEIGHT = 0.6
+CLIP_WEIGHT = 0.3
+LBP_WEIGHT = 0.1
 
 
 def analyze_image(image_path):
