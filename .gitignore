@@ -3,5 +3,4 @@ __pycache__/
 *.pyc
 .env
 static/uploads/
-models/clip_embeddings/
 .pytest_cache/
