@@ -4,6 +4,7 @@ from pathlib import Path
 
 import open_clip
 import torch
+torch.set_num_threads(1)
 from PIL import Image
 
 STYLE_DATASETS = {

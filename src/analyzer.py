@@ -1,4 +1,4 @@
-
+import gc
 from pathlib import Path
 
 from src.preprocessing import preprocess_image
@@ -62,6 +62,11 @@ def analyze_image(image_path):
     # 2. CLIP
     # -------------------------
 
+    # Color Histogram에서 사용한 이미지 메모리 정리
+    del query_image
+    gc.collect()
+
+    # CLIP 분석
     clip_scores = analyze_clip_image(image_path)
 
 
