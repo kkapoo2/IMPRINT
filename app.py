@@ -6,6 +6,7 @@ from src.analyzer import analyze_image
 
 
 app = Flask(__name__)
+app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
 
 # session 사용을 위한 키
 app.secret_key = "imprint-secret-key"
@@ -87,6 +88,9 @@ def analyze():
     # 이미지 저장
     image.save(image_path)
 
+    # 현재 세션에서 업로드한 파일명 저장
+    session["uploaded_filename"] = filename 
+
     # 분석 페이지로 이동
     return render_template(
         "analysis.html",
@@ -104,45 +108,51 @@ def run_analysis():
     image_path = request.form.get("image_path")
 
     if not image_path:
-
         return jsonify({
             "success": False,
             "message": "이미지 경로가 없습니다."
         })
 
-
     try:
+        # 전달된 이미지 경로에서 파일명 추출
+        filename = image_path.rsplit("/", 1)[-1]
 
-        # /static/uploads/xxx.png
-        # ↓
-        # static/uploads/xxx.png
+        # 현재 세션에서 업로드한 파일인지 확인
+        if filename != session.get("uploaded_filename"):
+            raise ValueError("현재 업로드한 이미지가 아닙니다.")
 
-        relative_path = image_path.lstrip("/")
+        # UUID 파일명 확인
+        try:
+            uuid.UUID(Path(filename).stem)
+        except ValueError:
+            raise ValueError("올바르지 않은 이미지 경로입니다.")
 
+        # 확장자 확인
+        if Path(filename).suffix.lower() not in {".jpg", ".jpeg", ".png"}:
+            raise ValueError("지원하지 않는 이미지 형식입니다.")
+
+        # 업로드 폴더 안의 파일만 사용
+        upload_dir = UPLOAD_FOLDER.resolve()
+        safe_path = upload_dir / filename
+
+        if not safe_path.is_file():
+            raise FileNotFoundError("업로드한 이미지를 찾을 수 없습니다.")
 
         # 실제 이미지 분석
-        result = analyze_image(
-            relative_path
-        )
+        result = analyze_image(str(safe_path))
 
-
-        # 결과 페이지에서 사용할 수 있도록 저장
+        # 분석 결과 저장
         session["analysis_result"] = result
-        session["image_path"] = image_path
+        session["image_path"] = f"/static/uploads/{filename}"
 
         return jsonify({
             "success": True
         })
 
-
     except Exception as e:
-
         return jsonify({
-
             "success": False,
-
             "message": str(e)
-
         })
 
 

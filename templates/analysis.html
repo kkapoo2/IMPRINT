@@ -465,9 +465,34 @@
   }
 
 
-  // 페이지가 열리면 분석 시작
-  startAnalysis();
+  // 이미지가 있을 때만 분석 시작
+  if (imagePath && imagePath !== "None") {
 
+    startAnalysis();
+
+  } else {
+
+    // 안내 메시지
+    progressMessage.textContent =
+      "먼저 Home에서 이미지를 업로드해주세요.";
+
+    progressValue.textContent = "0%";
+    progressBar.style.width = "0%";
+
+    // 페이지 제목 변경
+    document.querySelector(".page-title h1").textContent =
+      "READY TO ANALYZE";
+
+    document.querySelector(".page-title p").textContent =
+      "Home에서 이미지를 업로드하면 화풍 분석이 시작됩니다.";
+
+    // 이미지가 없을 때 깨진 이미지 표시 방지
+    document.querySelector(".input-image").style.display = "none";
+
+    // 분석 단계 강조 해제
+    stepColor.classList.remove("current");
+
+  }
 </script>
 
 
