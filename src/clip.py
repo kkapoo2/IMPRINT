@@ -225,35 +225,3 @@ def analyze_clip_image(image_path):
         "Disney": results["disney"],
         "Simpsons": results["simpsons"]
     }
-
-
-if __name__ == "__main__":
-    model, preprocess = load_clip_model()
-
-    input_embedding = get_image_embedding(
-        "test.jpg",
-        model,
-        preprocess
-    )
-
-    results = compare_all_styles(
-        input_embedding,
-        model,
-        preprocess
-    )
-
-    print("\nCLIP 분석 결과")
-
-    for style, score in results.items():
-        print(f"{style}: {score:.4f}")
-
-    # 가장 유사한 화풍 찾기
-    best_style = max(
-        results,
-        key=results.get
-    )
-
-    print(
-        "\n가장 유사한 화풍:",
-        best_style
-    )

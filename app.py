@@ -1,21 +1,25 @@
+from PIL import Image, UnidentifiedImageError
 from flask import Flask, render_template, request, jsonify, session
 from pathlib import Path
+import os
 import uuid
-
+from dotenv import load_dotenv
 from src.analyzer import analyze_image
 
-
+load_dotenv()
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
 
 # session 사용을 위한 키
-app.secret_key = "imprint-secret-key"
+app.secret_key = os.environ["SECRET_KEY"]
 
 # =========================
 # 업로드 폴더
 # =========================
 
-UPLOAD_FOLDER = Path("static/uploads")
+BASE_DIR = Path(__file__).resolve().parent
+
+UPLOAD_FOLDER = BASE_DIR / "static" / "uploads"
 
 UPLOAD_FOLDER.mkdir(
     parents=True,
@@ -88,8 +92,17 @@ def analyze():
     # 이미지 저장
     image.save(image_path)
 
+    # 실제 이미지 파일인지 확인
+    try:
+        with Image.open(image_path) as img:
+            img.verify()
+
+    except (UnidentifiedImageError, OSError, ValueError):
+        image_path.unlink(missing_ok=True)
+        return "올바른 이미지 파일이 아닙니다.", 400
+
     # 현재 세션에서 업로드한 파일명 저장
-    session["uploaded_filename"] = filename 
+    session["uploaded_filename"] = filename
 
     # 분석 페이지로 이동
     return render_template(
@@ -182,7 +195,4 @@ def result_page():
 # =========================
 
 if __name__ == "__main__":
-
-    app.run(
-        debug=True
-    )
+    app.run(debug=False)
