@@ -1,8 +1,16 @@
+
 from pathlib import Path
 
 from src.preprocessing import preprocess_image
 from src.color.colorhistogram import compare_with_dataset
 from src.clip import analyze_clip_image
+from src.lbp import (
+    extract_lbp_histogram,
+    calculate_lbp_similarity
+)
+
+import cv2
+
 
 # 프로젝트 루트
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,15 +28,12 @@ STYLE_DATASETS = {
 
 
 # 가중치
-COLOR_WEIGHT = 0.3
-CLIP_WEIGHT = 0.7
+COLOR_WEIGHT = 0.2
+CLIP_WEIGHT = 0.6
+LBP_WEIGHT = 0.2
 
 
 def analyze_image(image_path):
-    """
-    Color Histogram과 CLIP을 결합하여
-    화풍별 최종 유사도를 계산한다.
-    """
 
     # -------------------------
     # 1. Color Histogram
@@ -59,8 +64,62 @@ def analyze_image(image_path):
 
     clip_scores = analyze_clip_image(image_path)
 
+
     # -------------------------
-    # 3. 최종 점수 계산
+    # 3. LBP
+    # -------------------------
+
+    query_lbp_image = cv2.imread(str(image_path))
+
+    if query_lbp_image is None:
+        raise ValueError("입력 이미지를 불러올 수 없습니다.")
+
+    query_lbp_image = cv2.resize(
+    query_lbp_image,
+    (128, 128)
+    )
+
+    query_lbp = extract_lbp_histogram(query_lbp_image)
+
+    lbp_scores = {}
+
+    for style, dataset_path in STYLE_DATASETS.items():
+
+        similarities = []
+
+        for image_file in dataset_path.iterdir():
+
+            if image_file.suffix.lower() not in [
+                ".jpg", ".jpeg", ".png", ".bmp"
+            ]:
+                continue
+
+            dataset_image = cv2.imread(str(image_file))
+
+            if dataset_image is None:
+                continue
+
+            dataset_image = cv2.resize(
+                dataset_image,
+                (128, 128)
+            )
+
+            dataset_lbp = extract_lbp_histogram(dataset_image)
+            similarity = calculate_lbp_similarity(
+                query_lbp,
+                dataset_lbp
+            )
+
+            similarities.append(similarity)
+
+        lbp_scores[style] = (
+            sum(similarities) / len(similarities)
+            if similarities else 0
+        )
+
+
+    # -------------------------
+    # 4. 최종 점수 계산
     # -------------------------
 
     final_scores = {}
@@ -69,18 +128,21 @@ def analyze_image(image_path):
 
         color_score = color_scores[style]
 
-        # CLIP이 0~1 범위라면 0~100으로 변환
         clip_score = clip_scores[style] * 100
+
+        lbp_score = lbp_scores[style]
 
         final_score = (
             color_score * COLOR_WEIGHT
             + clip_score * CLIP_WEIGHT
+            + lbp_score * LBP_WEIGHT
         )
 
         final_scores[style] = round(final_score, 2)
 
+
     # -------------------------
-    # 4. 가장 유사한 화풍
+    # 5. 가장 유사한 화풍
     # -------------------------
 
     best_style = max(
@@ -91,6 +153,7 @@ def analyze_image(image_path):
     return {
         "color_scores": color_scores,
         "clip_scores": clip_scores,
+        "lbp_scores": lbp_scores,
         "final_scores": final_scores,
         "best_style": best_style
     }

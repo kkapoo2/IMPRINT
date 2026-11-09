@@ -168,7 +168,7 @@ def result_page():
 
 
 # =========================
-# RUN
+# RUNpython app.py
 # =========================
 
 if __name__ == "__main__":
