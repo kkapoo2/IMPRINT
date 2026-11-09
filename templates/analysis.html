@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>Analysis — IMPRINT</title>
+
+  <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/style.css') }}"
+  />
+
+</head>
+
+
+<body>
+
+
+  <!-- HEADER -->
+
+  <header class="site-header">
+
+    <a class="brand" href="/">
+      IMPRINT
+    </a>
+
+
+    <nav>
+
+      <a href="/">
+        Home
+      </a>
+
+      <a
+        class="active"
+        href="/analysis.html"
+      >
+        Analysis
+      </a>
+
+      <a href="/about.html">
+        About
+      </a>
+
+    </nav>
+
+  </header>
+
+
+
+  <!-- MAIN -->
+
+  <main class="page analysis">
+
+
+    <!-- TITLE -->
+
+    <div class="page-title">
+
+      <span class="overline">
+        IMAGE ANALYSIS
+      </span>
+
+      <h1>
+        ANALYSIS IN PROGRESS
+      </h1>
+
+      <p>
+        업로드한 이미지를 분석하고 있습니다.
+        잠시만 기다려주세요.
+      </p>
+
+    </div>
+
+
+
+    <!-- ANALYSIS CARD -->
+
+    <section class="progress-card">
+
+
+      <!-- INPUT IMAGE -->
+
+      <div class="input-image">
+
+        <span class="overline">
+          INPUT IMAGE
+        </span>
+
+
+        <div class="crop user-image-container">
+
+          <img
+            class="stored-image user-image"
+            src="{{ image_path }}"
+            alt="분석 이미지"
+          />
+
+        </div>
+
+      </div>
+
+
+
+      <!-- ANALYSIS PROCESS -->
+
+      <div class="analysis-steps">
+
+        <span class="overline">
+          ANALYSIS PROCESS
+        </span>
+
+
+        <!-- COLOR -->
+
+        <article
+          class="step current"
+          data-step="0"
+          id="step-color"
+        >
+
+          <b>
+            1
+          </b>
+
+
+          <div>
+
+            <strong>
+              Color Histogram
+            </strong>
+
+            <small>
+              이미지의 색상 분포를 분석하고 있습니다.
+            </small>
+
+          </div>
+
+        </article>
+
+
+
+        <!-- CLIP -->
+
+        <article
+          class="step"
+          data-step="1"
+          id="step-clip"
+        >
+
+          <b>
+            2
+          </b>
+
+
+          <div>
+
+            <strong>
+              CLIP Similarity
+            </strong>
+
+            <small>
+              이미지의 의미적 유사도를 분석합니다.
+            </small>
+
+          </div>
+
+        </article>
+
+
+
+        <!-- LBP -->
+
+        <article
+          class="step"
+          data-step="2"
+          id="step-lbp"
+        >
+
+          <b>
+            3
+          </b>
+
+
+          <div>
+
+            <strong>
+              LBP
+            </strong>
+
+            <small>
+              이미지의 질감과 패턴을 분석합니다.
+            </small>
+
+          </div>
+
+        </article>
+
+      </div>
+
+
+
+      <!-- PROGRESS -->
+
+      <div class="progress">
+
+        <div>
+
+          <span id="progress-message">
+            이미지를 분석하고 있습니다.
+          </span>
+
+
+          <strong id="progress-value">
+            0%
+          </strong>
+
+        </div>
+
+
+        <i>
+
+          <b id="progress-bar"></b>
+
+        </i>
+
+      </div>
+
+
+    </section>
+
+
+
+    <!-- NOTICE -->
+
+    <aside class="notice">
+
+      <b>
+        i
+      </b>
+
+
+      <p>
+
+        <strong>
+          분석 중입니다.
+        </strong>
+
+        Color Histogram과 CLIP을 이용해
+        이미지의 색상과 의미적 특징을 분석하고
+        가장 유사한 화풍을 계산합니다.
+
+      </p>
+
+    </aside>
+
+
+  </main>
+
+
+
+  <!-- =========================
+       ANALYSIS SCRIPT
+  ========================== -->
+
+  <script>
+
+    const imagePath = "{{ image_path }}";
+
+    const progressValue =
+      document.getElementById("progress-value");
+
+    const progressBar =
+      document.getElementById("progress-bar");
+
+    const progressMessage =
+      document.getElementById("progress-message");
+
+    const stepColor =
+      document.getElementById("step-color");
+
+    const stepClip =
+      document.getElementById("step-clip");
+
+    const stepLbp =
+      document.getElementById("step-lbp");
+
+
+    // 진행률 변경
+    function setProgress(
+      value,
+      message
+    ) {
+
+      progressValue.textContent =
+        value + "%";
+
+      progressBar.style.width =
+        value + "%";
+
+      progressMessage.textContent =
+        message;
+
+    }
+
+
+    // 단계 변경
+    function setCurrentStep(step) {
+
+      stepColor.classList.remove("current");
+      stepClip.classList.remove("current");
+      stepLbp.classList.remove("current");
+
+      if (step === 0) {
+
+        stepColor.classList.add("current");
+
+      }
+
+      if (step === 1) {
+
+        stepClip.classList.add("current");
+
+      }
+
+      if (step === 2) {
+
+        stepLbp.classList.add("current");
+
+      }
+
+    }
+
+
+    // 실제 분석 시작
+    async function startAnalysis() {
+
+      try {
+
+        // 1단계
+        setCurrentStep(0);
+
+        setProgress(
+          10,
+          "Color Histogram을 분석하고 있습니다."
+        );
+
+
+        // 잠깐 보여주기
+        await new Promise(
+          resolve => setTimeout(resolve, 500)
+        );
+
+
+        // 2단계
+        setCurrentStep(1);
+
+        setProgress(
+          35,
+          "CLIP 유사도를 분석하고 있습니다."
+        );
+
+
+        // 실제 서버 분석 요청
+        const formData =
+          new FormData();
+
+        formData.append(
+          "image_path",
+          imagePath
+        );
+
+
+        const response =
+          await fetch(
+            "/run-analysis",
+            {
+              method: "POST",
+              body: formData
+            }
+          );
+
+
+        const data =
+          await response.json();
+
+
+        // 오류
+        if (!data.success) {
+
+          throw new Error(
+            data.message
+          );
+
+        }
+
+
+        // 3단계
+        setCurrentStep(2);
+
+        setProgress(
+          90,
+          "분석 결과를 정리하고 있습니다."
+        );
+
+
+        await new Promise(
+          resolve => setTimeout(resolve, 500)
+        );
+
+
+        // 분석 결과 저장
+        sessionStorage.setItem(
+          "analysisResult",
+          JSON.stringify(data.result)
+        );
+
+
+        sessionStorage.setItem(
+          "imagePath",
+          data.image_path
+        );
+
+
+        // 완료
+        setProgress(
+          100,
+          "분석이 완료되었습니다."
+        );
+
+
+        await new Promise(
+          resolve => setTimeout(resolve, 300)
+        );
+
+
+        // 결과 페이지
+        window.location.href =
+          "/result";
+
+      }
+
+      catch (error) {
+
+        console.error(error);
+
+        progressMessage.textContent =
+          "분석 중 오류가 발생했습니다.";
+
+        alert(
+          "이미지 분석 중 오류가 발생했습니다.\n\n"
+          + error.message
+        );
+
+      }
+
+    }
+
+
+    // 페이지가 열리면 분석 시작
+    startAnalysis();
+
+  </script>
+
+
+</body>
+
+</html>

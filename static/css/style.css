@@ -48,7 +48,7 @@ main { width:min(1120px,calc(100% - 48px)); margin:auto; }
 .notice { margin-top:18px;padding:17px 20px;display:flex;gap:14px;align-items:center;background:#f1eee3;border-radius:10px;color:#6b644c; }.notice>b { width:28px;height:28px;border:1px solid #9a7723;border-radius:50%;display:grid;place-items:center; }.notice p { font-size:10px;line-height:1.55;margin:0; }.notice p strong { display:block;font-size:12px;color:#39372f; }
 .result-link { display:block;width:max-content;margin:25px auto 0;padding:12px 20px;border-radius:9px;background:#1c2124;color:#fff;font-size:11px;font-weight:700;transition:opacity .3s,transform .3s; }
 .result-link.is-hidden { opacity:0;pointer-events:none;transform:translateY(6px); }
-.stored-image.user-image { position:static!important;width:100%!important;height:100%!important;object-fit:cover; }
+.stored-image.user-image { position:static!important;width:100%!important;height:100%!important;object-fit:contain; }
 .toast { position:fixed;left:50%;bottom:24px;z-index:40;transform:translate(-50%,20px);padding:11px 18px;border-radius:9px;background:#1e2327;color:#fff;font-size:11px;opacity:0;pointer-events:none;transition:.25s;box-shadow:0 10px 30px #0002; }
 .toast.show { opacity:1;transform:translate(-50%,0); }
 .result-title { display:flex;align-items:end;justify-content:space-between;margin-bottom:25px; }.result-title>a { background:#1c2124;color:#fff;padding:11px 17px;border-radius:9px;font-size:11px; }
@@ -135,4 +135,34 @@ main { width:min(1120px,calc(100% - 48px)); margin:auto; }
   background: #555;
 
   border-radius: 999px;
+}
+
+/* 업로드한 원본 이미지 표시 */
+
+.input-image .user-image-container {
+    width: 100%;
+    height: 220px;
+    margin-top: 12px;
+
+    border-radius: 10px;
+    overflow: hidden;
+
+    background: #f1f1ed;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.input-image .user-image {
+    position: static !important;
+
+    width: 100% !important;
+    height: 100% !important;
+
+    max-width: 100% !important;
+
+    object-fit: contain;
+
+    transform: none !important;
 }
