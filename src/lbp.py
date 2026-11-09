@@ -1,19 +1,12 @@
 
 import cv2
 import numpy as np
+from skimage.feature import local_binary_pattern
 
 
 def extract_lbp_histogram(image, points=8, radius=1):
     """
-    LBP 특징 추출 및 히스토그램 생성
-
-    Parameters:
-        image: 이미지 경로 또는 OpenCV 이미지 배열
-        points: 주변 픽셀 개수
-        radius: 주변 픽셀 탐색 반경
-
-    Returns:
-        정규화된 LBP 히스토그램
+    Uniform LBP 특징 추출 및 히스토그램 생성
     """
 
     # 이미지 불러오기
@@ -31,31 +24,21 @@ def extract_lbp_histogram(image, points=8, radius=1):
 
     gray = gray.astype(np.uint8)
 
-    # LBP 연산
-    height, width = gray.shape
-    lbp = np.zeros((height, width), dtype=np.uint8)
-
-    neighbors = [
-        (-1, -1), (-1, 0), (-1, 1),
-        (0, 1),
-        (1, 1), (1, 0), (1, -1),
-        (0, -1)
-    ]
-
-    for i, (dy, dx) in enumerate(neighbors):
-        shifted = np.roll(
-            gray,
-            shift=(-dy * radius, -dx * radius),
-            axis=(0, 1)
-        )
-
-        lbp |= ((shifted >= gray).astype(np.uint8) << i)
+    # Uniform LBP 연산
+    lbp = local_binary_pattern(
+        gray,
+        P=points,
+        R=radius,
+        method="uniform"
+    )
 
     # 히스토그램 생성
+    bins = points + 2
+
     hist, _ = np.histogram(
         lbp.ravel(),
-        bins=256,
-        range=(0, 256)
+        bins=bins,
+        range=(0, bins)
     )
 
     # 정규화
@@ -67,12 +50,17 @@ def extract_lbp_histogram(image, points=8, radius=1):
 
 def calculate_lbp_similarity(hist1, hist2):
     """
-    두 LBP 히스토그램의 유사도 계산
-
-    Returns:
-        0~100 사이의 유사도
+    Chi-square distance 기반 유사도
     """
 
-    similarity = np.minimum(hist1, hist2).sum()
+    eps = 1e-10
+
+    distance = 0.5 * np.sum(
+        ((hist1 - hist2) ** 2) /
+        (hist1 + hist2 + eps)
+    )
+
+    # 거리 기반 유사도 변환
+    similarity = np.exp(-distance)
 
     return float(similarity * 100)
