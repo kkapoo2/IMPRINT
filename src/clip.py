@@ -1,15 +1,10 @@
+from functools import lru_cache
 import os
+from pathlib import Path
 
 import open_clip
 import torch
 from PIL import Image
-
-"""
-지금 코드는 데이터셋 이미지가 100장이면 CLIP을 100번 매번 다시 계산함
-기능 확인용으로는 괜찮지만 최종 프로그램에서는 비효율적
-후에 데이터셋을 미리 embedding으로 변환해두고 저장한 후, 
-입력 이미지와 비교하는 방식으로 개선 필요
-"""
 
 STYLE_DATASETS = {
     "ghibli": "dataset/ghibli",
@@ -17,22 +12,27 @@ STYLE_DATASETS = {
     "simpsons": "dataset/simpsons",
 }
 
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+CACHE_DIR = BASE_DIR / "models" / "clip_embeddings"
+
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png"}
 
+
+@lru_cache(maxsize=1)
 def load_clip_model():
     """
-    OpenCLIP의 ViT-B-32 모델과 이미지 전처리기를 불러오는 함수.
-    
-    Returns:
-        model: CLIP 이미지 인코더
-        processor: CLIP 전용 이미지 전처리기
+    CLIP 모델을 한 번 로드한 후 재사용한다.
     """
     model, _, preprocess = open_clip.create_model_and_transforms(
-        'ViT-B-32', pretrained='openai')
+        "ViT-B-32",
+        pretrained="openai"
+    )
 
-    model.eval()  # 모델을 평가 모드로 설정
+    model.eval()
 
     return model, preprocess
+
 
 def get_image_embedding(image_path, model, preprocess):
     """
@@ -58,6 +58,7 @@ def get_image_embedding(image_path, model, preprocess):
 
     return embedding
 
+
 def calculate_clip_similarity(embedding1, embedding2):
     """
     두 CLIP embedding 사이의 cosine similarity를 계산하는 함수.
@@ -72,6 +73,57 @@ def calculate_clip_similarity(embedding1, embedding2):
     similarity = (embedding1 @ embedding2.T).item()
 
     return similarity
+
+@lru_cache(maxsize=3)
+def load_clip_cache(style):
+    """
+    저장된 CLIP embedding 캐시를 불러온다.
+
+    Args:
+        style (str): 화풍 이름 (ghibli, disney, simpsons)
+
+    Returns:
+        torch.Tensor: 데이터셋 이미지들의 embedding
+    """
+    cache_path = CACHE_DIR / f"{style}.pt"
+
+    if not cache_path.exists():
+        raise FileNotFoundError(
+            f"CLIP 캐시가 없습니다: {cache_path}\n"
+            "python -m src.build_clip_cache를 먼저 실행하세요."
+        )
+
+    cache = torch.load(
+        cache_path,
+        map_location="cpu",
+        weights_only=True
+    )
+
+    if (
+        cache["model_name"] != "ViT-B-32"
+        or cache["pretrained"] != "openai"
+    ):
+        raise ValueError(
+            f"CLIP 모델과 캐시 정보가 일치하지 않습니다: {style}"
+        )
+
+    return cache["embeddings"]
+
+def compare_with_clip_cache(input_embedding, style):
+    """
+    입력 이미지와 저장된 화풍별 embedding을 비교해
+    평균 cosine similarity를 반환한다.
+    """
+
+    dataset_embeddings = load_clip_cache(style)
+
+    # 입력 벡터 [1, 512]
+    # 데이터셋 벡터 [N, 512]
+    # 결과 [1, N]
+    similarities = input_embedding.cpu() @ dataset_embeddings.T
+
+    # 기존과 동일하게 전체 평균 사용
+    return similarities.mean().item()
 
 
 def compare_with_dataset(
@@ -137,20 +189,15 @@ def compare_all_styles(
     preprocess
 ):
     """
-    입력 이미지를 모든 화풍 데이터셋과 비교하는 함수.
-
-    Returns:
-        dict: 화풍별 평균 CLIP cosine similarity
+    저장된 CLIP 캐시를 사용해
+    화풍별 평균 cosine similarity를 계산한다.
     """
     results = {}
 
-    for style, dataset_path in STYLE_DATASETS.items():
-
-        score = compare_with_dataset(
+    for style in STYLE_DATASETS:
+        score = compare_with_clip_cache(
             input_embedding,
-            dataset_path,
-            model,
-            preprocess
+            style
         )
 
         results[style] = score
